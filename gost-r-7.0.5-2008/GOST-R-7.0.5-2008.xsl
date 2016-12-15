@@ -225,7 +225,7 @@
       </source>
     </footnotecitation>
     <bibliography>
-      <columns>2</columns>
+      <columns>1</columns>
       <source type="Placeholder">
         <column id="1">
           <halign>left</halign>
@@ -330,7 +330,7 @@
         <column id="2">
           <halign>left</halign>
           <valign>top</valign>
-          <format lcid="1033">{%Author:249%.}{ %Title% [Электронный ресурс]}{ // %InternetSiteTitle%: [сайт].}{ [%Year%].}{ URL: %URL:0s%}{ (дата обращения: %DayAccessed%.%MonthAccessed%.%YearAccessed%).}</format>
+          <format lcid="1033">{%Author:249%.}{ %Title% [Online]}{ // %InternetSiteTitle%: [Web site].}{ [%Year%].}{ URL: %URL:0s%}{ (accessed: %DayAccessed%.%MonthAccessed%.%YearAccessed%).}</format>
           <format lcid="1049">{%Author:249%.}{ %Title% [Электронный ресурс]}{ // %InternetSiteTitle%: [сайт].}{ [%Year%].}{ URL: %URL:0s%}{ (дата обращения: %DayAccessed%.%MonthAccessed%.%YearAccessed%).}</format>
         </column>
         <sortkey></sortkey>
@@ -344,7 +344,7 @@
         <column id="2">
           <halign>left</halign>
           <valign>top</valign>
-           <format lcid="1033">{%Author:249%.}{ %Title%}{ // %InternetSiteTitle%.}{ %Year%.}{ URL: %URL:0s%}{ (дата обращения: %DayAccessed%.%MonthAccessed%.%YearAccessed%).}</format>
+           <format lcid="1033">{%Author:249%.}{ %Title%}{ // %InternetSiteTitle%.}{ %Year%.}{ URL: %URL:0s%}{ (accessed: %DayAccessed%.%MonthAccessed%.%YearAccessed%).}</format>
            <format lcid="1049">{%Author:249%.}{ %Title%}{ // %InternetSiteTitle%.}{ %Year%.}{ URL: %URL:0s%}{ (дата обращения: %DayAccessed%.%MonthAccessed%.%YearAccessed%).}</format>
         </column>
         <sortkey></sortkey>
@@ -979,18 +979,40 @@
           <xsl:variable name="type" select="./b:Type"/>
           <xsl:variable name="sourcetype" select="./b:SourceType"/>
 
+          <!-- Apply current locale to the second column. -->
+          <xsl:variable name="lcid">
+            <xsl:variable name="rawLcid" select="./b:LCID"/>
+            <xsl:choose>
+              <xsl:when test="$rawLcid = 'en-US'">
+                <xsl:text>1033</xsl:text>
+              </xsl:when>
+              <xsl:when test="$rawLcid = '1033' or $rawLcid = '1049'">
+                <xsl:value-of select="$rawLcid"/>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:text>1033</xsl:text>
+              </xsl:otherwise>
+            </xsl:choose>
+          </xsl:variable>
+
           <xsl:choose>
             <!-- If there is no source type, its a placeholder. -->
             <xsl:when test="string-length($sourcetype) = 0 and string-length(msxsl:node-set($data)/bibliography/source[@type = 'Placeholder']/column[@id = '1']/format) > 0">
               <xsl:value-of select="msxsl:node-set($data)/bibliography/source[@type = 'Placeholder']/column[@id = '1']/format[@lcid = '']"/>
+              <xsl:text> </xsl:text>
+              <xsl:value-of select="msxsl:node-set($data)/bibliography/source[@type = 'Placeholder']/column[@id = '2']/format[@lcid = $lcid]"/>
             </xsl:when>
             <!-- Go for the type element if available. -->
             <xsl:when test="string-length($type) > 0 and string-length(msxsl:node-set($data)/bibliography/source[@type = $type]/column[@id = '1']/format) > 0 ">
               <xsl:value-of select="msxsl:node-set($data)/bibliography/source[@type = $type]/column[@id = '1']/format[@lcid = '']"/>
+              <xsl:text> </xsl:text>
+              <xsl:value-of select="msxsl:node-set($data)/bibliography/source[@type = $type]/column[@id = '2']/format[@lcid = $lcid]"/>
             </xsl:when>
             <!-- Else go for the source type element if available. -->
             <xsl:when test="string-length(msxsl:node-set($data)/bibliography/source[@type = $sourcetype]/column[@id = '1']/format) > 0 ">
               <xsl:value-of select="msxsl:node-set($data)/bibliography/source[@type = $sourcetype]/column[@id = '1']/format[@lcid = '']"/>
+              <xsl:text> </xsl:text>
+              <xsl:value-of select="msxsl:node-set($data)/bibliography/source[@type = $sourcetype]/column[@id = '2']/format[@lcid = $lcid]"/>
             </xsl:when>
             <!-- Else display error message. -->
             <xsl:otherwise>
